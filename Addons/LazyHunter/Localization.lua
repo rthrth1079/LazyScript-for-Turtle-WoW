@@ -4,6 +4,7 @@ function lazyHunterLoad.LoadHunterLocalization(locale)
 
 	lazyHunterLocale.enUS.ACTION_TTS.aimed                = "Aimed Shot"
 	lazyHunterLocale.enUS.ACTION_TTS.arcane               = "Arcane Shot"
+	lazyHunterLocale.enUS.ACTION_TTS.killCommand          = "Kill Command"
 	lazyHunterLocale.enUS.ACTION_TTS.aspectBeast          = "Aspect of the Beast"
 	lazyHunterLocale.enUS.ACTION_TTS.aspectCheetah        = "Aspect of the Cheetah"
 	lazyHunterLocale.enUS.ACTION_TTS.aspectHawk           = "Aspect of the Hawk"
@@ -89,6 +90,7 @@ function lazyHunterLoad.LoadHunterLocalization(locale)
 	if (locale == "zhCN") then
 		lazyHunterLocale.zhCN.ACTION_TTS.aimed                = "瞄准射击"
 		lazyHunterLocale.zhCN.ACTION_TTS.arcane               = "奥术射击"
+		lazyHunterLocale.zhCN.ACTION_TTS.killCommand          = "击杀命令"
 		lazyHunterLocale.zhCN.ACTION_TTS.aspectBeast          = "野兽守护"
 		lazyHunterLocale.zhCN.ACTION_TTS.aspectCheetah        = "猎豹守护"
 		lazyHunterLocale.zhCN.ACTION_TTS.aspectHawk           = "雄鹰守护"

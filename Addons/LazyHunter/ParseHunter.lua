@@ -11,6 +11,7 @@ function lazyHunterLoad.LoadParseHunter()
 
 	lazyHunter.actions.aimed               = lazyHunter.Action:New("aimed",                "INV_Spear_07")
 	lazyHunter.actions.arcane              = lazyHunter.Action:New("arcane",               "Ability_ImpalingBolt")
+	lazyHunter.actions.killCommand         = lazyHunter.Action:New("killCommand",          "ability_hunter_killcommand")
 	lazyHunter.actions.aspectBeast         = lazyHunter.Action:New("aspectBeast",          "Ability_Mount_PinkTiger", nil, nil, true)
 	lazyHunter.actions.aspectCheetah       = lazyHunter.Action:New("aspectCheetah",        "Ability_Mount_JungleTiger", nil, nil, true)
 	lazyHunter.actions.aspectHawk          = lazyHunter.Action:New("aspectHawk",           "Spell_Nature_RavenForm")
@@ -263,6 +264,15 @@ function lazyHunterLoad.LoadParseHunter()
 		end
 		table.insert(actions, lazyHunter.actions.dismiss)
 		table.insert(masks, lazyHunter.masks.HasPet)
+		return true
+	end
+
+	function lazyHunter.bitParsers.killCommand(bit, actions, masks)
+		if (not lazyHunter.rebit(bit, lazyHunter.actions.killCommand.codePattern)) then
+			return false
+		end
+		table.insert(masks, lazyHunter.masks.HasPet)
+		table.insert(actions, lazyHunter.actions.killCommand)
 		return true
 	end
 
