@@ -742,7 +742,9 @@ end
 -- of reading.
 
 function lazyScript.masks.IsTargetOfTarget()
-	return UnitIsUnit("player", "targettarget")
+    local isPlayer = UnitIsUnit("player","targettarget")
+    lazyScript.d("Debug: IsTargetOfTarget(player) = "..tostring(isPlayer))
+    return isPlayer
 end
 
 function lazyScript.bitParsers.ifTargetOfTarget(bit, actions, masks)
@@ -757,7 +759,9 @@ end
 
 
 function lazyScript.masks.TargetHasTarget()
-	return UnitExists("targettarget")
+    local hasTgt = UnitExists("targettarget")
+    lazyScript.d("Debug: TargetHasTarget = "..tostring(hasTgt))
+    return hasTgt
 end
 
 function lazyScript.bitParsers.ifTargetHasTarget(bit, actions, masks)
@@ -1036,6 +1040,11 @@ function lazyScript.masks.UnitPowerMask(unitId, gtLtEq, val, powerType, wantPct,
 		if not compareVal then
 			return false
 		end
+
+		-- lazyScript.d(string.format(
+		-- 	"Debug: %s %s %d%s %s -> current=%s", 
+		-- 	unitId, gtLtEq, val, wantPct and "%" or "", powerType, tostring(compareVal)
+		-- ))
 
 		if (gtLtEq == ">") then
 			return (compareVal > val)

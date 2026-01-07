@@ -42,6 +42,8 @@ function lazyDruidLoad.LoadParseDruid()
 	lazyDruid.actions.maul              = lazyDruid.Action:New("maul",               "Ability_Druid_Maul")
 	lazyDruid.actions.savageBite        = lazyDruid.Action:New("savageBite",         "Ability_Racial_Cannibalize")
 	lazyDruid.actions.swipe             = lazyDruid.Action:New("swipe",              "INV_Misc_MonsterClaw_03")
+	lazyDruid.actions.reshift           = lazyDruid.Action:New("reshift",            "spell_reshift_2")
+	--	lazyDruid.actions.reshift           = lazyDruid.Action:New("reshift",            "spell_reshift_2", nil, nil, true)
 
 	-- General
 	lazyDruid.actions.abolishPoison     = lazyDruid.Action:New("abolishPoison",      "Spell_Nature_NullifyPoison_02")
@@ -146,6 +148,63 @@ function lazyDruidLoad.LoadParseDruid()
 		end
 		table.insert(actions, lazyDruid.actions.trackHumanoids)
 		table.insert(masks, lazyDruid.negWrapper(lazyDruid.masks.isTracking(lazyDruid.trackers.humanoids), true))
+		return true
+	end
+
+	
+	function lazyDruid.bitParsers.rake(bit, actions, masks)
+		if (not lazyDruid.rebit(bit, lazyDruid.actions.rake.codePattern)) then
+			return false
+		end
+
+		-- Only apply rake if the current target does NOT already have my rake
+		local function hasMyRake(sayNothing)
+			-- Debug: report Cursive availability
+			-- lazyDruid.d("hasMyRake: Cursive present? "..tostring(Cursive and Cursive.curses and Cursive.curses.HasCurse))
+			if Cursive and Cursive.curses and Cursive.curses.HasCurse then
+				local _, guid = UnitExists("target")
+				-- lazyDruid.d("hasMyRake: UnitExists target -> "..tostring(guid))
+				if not guid then return false end
+				local has = Cursive.curses:HasCurse("rake", guid)
+				--lazyDruid.d("hasMyRake: Cursive.curses:HasCurse('rake') -> "..tostring(has))
+				return has
+			end
+			-- lazyDruid.d("hasMyRake: Cursive not available")
+			return false
+		end
+
+		-- insert the negated check: only pass when HasCurse is false
+		table.insert(masks, lazyDruid.negWrapper(hasMyRake, true))
+
+		table.insert(actions, lazyDruid.actions.rake)
+		return true
+	end
+
+	function lazyDruid.bitParsers.rip(bit, actions, masks)
+		if (not lazyDruid.rebit(bit, lazyDruid.actions.rip.codePattern)) then
+			return false
+		end
+
+		-- Only apply rip if the current target does NOT already have my rip
+		local function hasMyRip(sayNothing)
+			-- Debug: report Cursive availability
+			--lazyDruid.d("hasMyRip: Cursive present? "..tostring(Cursive and Cursive.curses and Cursive.curses.HasCurse))
+			if Cursive and Cursive.curses and Cursive.curses.HasCurse then
+				local _, guid = UnitExists("target")
+				--lazyDruid.d("hasMyRip: UnitExists target -> "..tostring(guid))
+				if not guid then return false end
+				local has = Cursive.curses:HasCurse("rip", guid)
+				--lazyDruid.d("hasMyRip: Cursive.curses:HasCurse('rip') -> "..tostring(has))
+				return has
+			end
+			--lazyDruid.d("hasMyRip: Cursive not available")
+			return false
+		end
+
+		-- insert the negated check: only pass when HasCurse is false
+		table.insert(masks, lazyDruid.negWrapper(hasMyRip, true))
+
+		table.insert(actions, lazyDruid.actions.rip)
 		return true
 	end
 
@@ -509,8 +568,25 @@ function lazyDruidLoad.LoadParseDruid()
 	function lazyDruid.masks.CalculateBaseBiteDamage(cp, sayNothing)
 		-- find bite rank
 		-- lookup damage cp using damage table
-		local rank = lazyDruid.actions.bite:GetRank()
+		local biteAction = lazyDruid.actions and lazyDruid.actions.bite
+		if (not biteAction) then
+			lazyDruid.p("DEBUG: lazyDruid.actions.bite is nil in CalculateBaseBiteDamage")
+			if lazyDruid.actions then
+				local keys = {}
+				for k, _ in pairs(lazyDruid.actions) do table.insert(keys, k) end
+				lazyDruid.d("DEBUG: lazyDruid.actions keys: "..table.concat(keys, ", "))
+			else
+				lazyDruid.d("DEBUG: lazyDruid.actions is nil")
+			end
+			if debugstack then lazyDruid.d("DEBUG stack: "..debugstack()) end
+			return false
+		end
+		local rank = biteAction:GetRank()
 		if (rank == 0) then
+			return false
+		end
+		if (not lazyDruid.biteDamage or not lazyDruid.biteDamage[rank]) then
+			lazyDruid.p("DEBUG: lazyDruid.biteDamage missing for rank "..tostring(rank))
 			return false
 		end
 		local biteDamage = lazyDruid.biteDamage[rank][cp]
@@ -804,10 +880,11 @@ function lazyDruidLoad.LoadParseDruid()
 	---------------
 	-- Place any other tables of data unique to the class here.
 	lazyDruid.biteDamage = {
-		{ (60+76)/2,   (106+122)/2, (152+168)/2, (198+214)/2, (244+260)/2},
-		{ (91+115)/2,  (162+186)/2, (233+257)/2, (304+328)/2, (375+399)/2},
-		{ (136+176)/2, (136+176)/2, (348+388)/2, (454+494)/2, (560+600)/2},
-		{ (190+240)/2, (335+385)/2, (480+530)/2, (625+675)/2, (770+820)/2},
+		{ (35+51/2), (66+82)/2,  (97+113)/2,  (128+144)/2, (159+175)/2},
+		{ (50+66)/2,   (86+102)/2,  (122+138)/2, (158+174)/2, (194+210)/2},
+		{ (79+103)/2,  (138+162)/2, (197+221)/2, (256+280)/2, (315+339)/2},
+		{ (122+162)/2, (214+254)/2, (306+346)/2, (398+438)/2, (490+530)/2},
+		{ (173+223)/2, (301+351)/2, (429+479)/2, (557+607)/2, (685+735)/2},
 		{ (199+259)/2, (346+406)/2, (493+553)/2, (640+700)/2, (787+847)/2},
 	}
 

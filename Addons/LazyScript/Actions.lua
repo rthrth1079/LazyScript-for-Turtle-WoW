@@ -324,6 +324,57 @@ end
 
 function lazyScript.Action:Use()
 	lazyScript.d(ACTION_1 .. self.name)
+	if self.code == "frenziedRegen" then
+		local spellName = "Frenzied Regeneration"
+		local lastIndex = nil
+		-- Find the highest-rank index of Frenzied Regeneration in the spellbook
+		for i = 1, 120 do
+			local name, rank = GetSpellName(i, BOOKTYPE_SPELL)
+			if not name then break end
+			if name == spellName then
+				lastIndex = i  -- keep updating to the last (highest rank) found
+			end
+		end
+		if lastIndex then
+			CastSpell(lastIndex, "spell")  -- Cast Frenzied Regeneration directly
+			-- If this action could interrupt a cast, handle that (usually not applicable to FR)
+			if self.interrupts and lazyScript.interrupt.targetCasting then
+				lazyScript.interrupt.lastSpellInterrupted = lazyScript.interrupt.targetCasting
+				lazyScript.interrupt.targetCasting = nil
+			end
+			lazyScript.recordAction(self.code)            -- Log the action usage
+			self.everyTimer = GetTime()                   -- Reset timers as normal
+			self.nowAndEveryTimer = self.everyTimer
+			return  -- Skip the normal slot-based logic
+		end
+	end
+	
+	-- Special-case Reshift: cast the Reshift spell directly if present
+	if self.code == "reshift" then
+		local spellName = "Reshift"
+		local lastIndex = nil
+		-- Find the highest-rank index of Reshift in the spellbook
+		for i = 1, 120 do
+			local name, rank = GetSpellName(i, BOOKTYPE_SPELL)
+			if not name then break end
+			if name == spellName then
+				lastIndex = i
+			end
+		end
+		if lastIndex then
+			CastSpell(lastIndex, "spell")
+			if self.interrupts and lazyScript.interrupt.targetCasting then
+				lazyScript.interrupt.lastSpellInterrupted = lazyScript.interrupt.targetCasting
+				lazyScript.interrupt.targetCasting = nil
+			end
+			lazyScript.recordAction(self.code)
+			self.everyTimer = GetTime()
+			self.nowAndEveryTimer = self.everyTimer
+			return
+		end
+	end
+
+
 	local spellIndexStart, rankCount, maxRank = self:FindSpellRanks(false)
 
 	if spellIndexStart then
@@ -348,7 +399,9 @@ function lazyScript.Action:IsUsable(sayNothing)
 	local spellIndexStart, rankCount, maxRank = self:FindSpellRanks(sayNothing)
 	if (self:GetSlot(sayNothing)) then
 		local inRange = IsActionInRange(self.slot)
-		if (IsUsableAction(self.slot) == 1 and
+		local usable = IsUsableAction(self.slot)
+
+		if (usable == 1 and
 			GetActionCooldown(self.slot) == 0 and -- not in cooldown
 			not IsCurrentAction(self.slot) and -- not already being used
 			(inRange == 1 or inRange == nil or (self.parent and self.parent.target == "player"))) then
@@ -1994,6 +2047,12 @@ function lazyScript.Try(actions, masks, doNothing)
 	if (masks) then
 		for _, mask in ipairs(masks) do
 			if (not mask(sayNothing)) then
+				-- -- Debug: if Frenzied Regeneration is on this line, log that a condition failed
+				-- for _, act in ipairs(actions) do
+				-- 	if act.code == "frenziedRegen" then
+				-- 		lazyScript.d("[DEBUG] Skipping Frenzied Regeneration – a condition/mask returned false")
+				-- 	end
+				-- end	
 				return nil
 			end
 		end
@@ -2013,6 +2072,9 @@ function lazyScript.Try(actions, masks, doNothing)
 			end
 		else
 			if (not actionObj:IsUsable(sayNothing)) then
+		        -- if actionObj.code == "frenziedRegen" then
+				-- 	lazyScript.d("[DEBUG] Frenzied Regeneration found but not usable (likely wrong form or no rage)")
+				-- end
 				return nil
 			end
 			table.insert(temp, actionObj)
