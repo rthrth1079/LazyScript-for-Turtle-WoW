@@ -113,6 +113,7 @@ lsConf.interruptExceptionCriteria = {
 
 lazyScript.perPlayerDefaults = {
 	["autoTarget"] = true,
+	["custom1"] = nil,
 	["deathMinionHidesOutOfCombat"] = false,
 	["deathMinionIsVisible"] = false,
 	["debug"] = false,
@@ -960,6 +961,19 @@ function lazyScript.SlashCommand(line)
 			else
 			lazyScript.perPlayerConf.clearHistoryAfterCombat = true
 			lazyScript.p(NOW_CLEARING_HISTORY)
+		end
+		
+		elseif (cmd == "custom1") then
+		local value = args[1]
+		if (value) then
+			lazyScript.perPlayerConf.custom1 = value
+			lazyScript.p("custom1 set to: "..value)
+			else
+			if (lazyScript.perPlayerConf.custom1) then
+				lazyScript.p("custom1 is currently: "..lazyScript.perPlayerConf.custom1)
+				else
+				lazyScript.p("custom1 is not set")
+			end
 		end
 		
 		elseif (cmd == "mmshow") then

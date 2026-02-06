@@ -2397,6 +2397,25 @@ function lazyScript.bitParsers.ifGotTalent(bit, actions, masks)
 end
 --/LaYt
 
+function lazyScript.masks.Custom1(value)
+	return function()
+		if (lazyScript.perPlayerConf.custom1 == value) then
+			return true
+		end
+		return false
+	end
+end
+
+function lazyScript.bitParsers.ifCustom1(bit, actions, masks)
+	if (not lazyScript.rebit(bit, "^if(Not)?Custom1=(.+)$")) then
+		return false
+	end
+	local negate = lazyScript.negate1()
+	local value = lazyScript.match2
+	table.insert(masks, lazyScript.negWrapper(lazyScript.masks.Custom1(value), negate))
+	return true
+end
+
 function lazyScript.masks.History(gtLtEq, val, action)
 	return function()
 		local historySize = table.getn(lazyScript.actionHistory)
