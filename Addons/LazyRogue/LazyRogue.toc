@@ -1,7 +1,7 @@
 ﻿## Interface: 11200
 ## Title: LazyScript - |cffff770CLazy|r|cffffffffRogue|r
 ## Title-zhCN: 懒人神器 - |cffFEF367盗贼一键畅玩|r
-## Version: 4.0.2
+## Version: 1.0.8
 ## X-Revision: $Revision: 747 $
 ## X-LazyScriptCompatibility: 3
 ## Notes: Programmable Rogue Attacks.
