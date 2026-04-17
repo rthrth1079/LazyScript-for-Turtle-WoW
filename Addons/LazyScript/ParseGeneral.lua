@@ -943,6 +943,31 @@ function lazyScript.bitParsers.ifTargetAttackable(bit, actions, masks)
 end
 
 
+function lazyScript.masks.TargetNamed(targetName)
+	return function()
+		if not UnitExists("target") then
+			return false
+		end
+		local currentTargetName = UnitName("target")
+		if not currentTargetName then
+			return false
+		end
+		return (currentTargetName == targetName)
+	end
+end
+
+function lazyScript.bitParsers.ifTargetName(bit, actions, masks)
+	if (not lazyScript.rebit(bit, "^if(Not)?TargetName=(.+)$")) then
+		return false
+	end
+	table.insert(masks, lazyScript.masks.HaveTarget)
+	local negate = lazyScript.negate1()
+	local targetName = lazyScript.match2
+	table.insert(masks, lazyScript.negWrapper(lazyScript.masks.TargetNamed(targetName), negate))
+	return true
+end
+
+
 -- supported unitIds: player, pet, target
 function lazyScript.masks.GetUnitHealth(unitId, wantPct, wantDeficit, sayNothing)
 	if (unitId == "player" or unitId == "pet" or UnitPlayerOrPetInParty(unitId) or UnitPlayerOrPetInRaid(unitId)) then
