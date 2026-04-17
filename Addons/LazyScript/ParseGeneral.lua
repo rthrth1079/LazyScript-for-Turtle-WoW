@@ -503,6 +503,34 @@ function lazyScript.bitParsers.useFreeItem(bit, actions, masks)
 	return true
 end
 
+function lazyScript.masks.ItemExists(itemName)
+	return function()
+		-- Search all bags and backpack for the item
+		for bag = 0, 4 do
+			for slot = 1, GetContainerNumSlots(bag) do
+				local link = GetContainerItemLink(bag, slot)
+				if link and string.find(link, itemName, 1, true) then
+					local _, count = GetContainerItemInfo(bag, slot)
+					if count and count > 0 then
+						return true
+					end
+				end
+			end
+		end
+		return false
+	end
+end
+
+function lazyScript.bitParsers.ifItemExists(bit, actions, masks)
+	if (not lazyScript.rebit(bit, "^if(Not)?ItemExists=(.+)$")) then
+		return false
+	end
+	local negate = lazyScript.negate1()
+	local itemName = lazyScript.match2
+	table.insert(masks, lazyScript.negWrapper(lazyScript.masks.ItemExists(itemName), negate))
+	return true
+end
+
 function lazyScript.bitParsers.wand(bit, actions, masks)
 	if (not lazyScript.rebit(bit, lazyScript.pseudoActions.wand.codePattern)) then
 		return false
@@ -939,31 +967,6 @@ function lazyScript.bitParsers.ifTargetAttackable(bit, actions, masks)
 	table.insert(masks, lazyScript.masks.HaveTarget)
 	local negate = lazyScript.negate1()
 	table.insert(masks, lazyScript.negWrapper(lazyScript.masks.TargetAttackable, negate))
-	return true
-end
-
-
-function lazyScript.masks.TargetNamed(targetName)
-	return function()
-		if not UnitExists("target") then
-			return false
-		end
-		local currentTargetName = UnitName("target")
-		if not currentTargetName then
-			return false
-		end
-		return (currentTargetName == targetName)
-	end
-end
-
-function lazyScript.bitParsers.ifTargetName(bit, actions, masks)
-	if (not lazyScript.rebit(bit, "^if(Not)?TargetName=(.+)$")) then
-		return false
-	end
-	table.insert(masks, lazyScript.masks.HaveTarget)
-	local negate = lazyScript.negate1()
-	local targetName = lazyScript.match2
-	table.insert(masks, lazyScript.negWrapper(lazyScript.masks.TargetNamed(targetName), negate))
 	return true
 end
 
